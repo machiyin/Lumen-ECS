@@ -2,9 +2,9 @@ local RunService = game:GetService("RunService")
 
 local DEBUG = false
 
-local World = {}
+local Framework = { world = {} }
 
-function World.new()
+function Framework.world.new()
 	local world = {
 		_nextEntityId = 0,
 		_entities = {},
@@ -14,24 +14,34 @@ function World.new()
 		world._nextEntityId += 1
 
 		local entity = {
-			_id = world._nextEntityId,
+			id = world._nextEntityId,
 			_components = {},
 		}
 
-		world._entities[entity._id] = entity
+		world._entities[entity.id] = entity
 
-		function entity.insert(component)
-			entity._components[component._name] = component
-			if DEBUG then
-				print("entity.insert", entity._id, component)
+		function entity.insert(...)
+			local componentsToInsert = { ... }
+			for _, component in componentsToInsert do
+				entity._components[component._name] = component
 			end
+
+			if DEBUG then
+				print("entity.insert", entity.id, ...)
+			end
+
+			return ...
 		end
 
 		function entity.remove(component)
 			entity._components[component._name] = nil
 			if DEBUG then
-				print("entity.remove", entity._id, component)
+				print("entity.remove", entity.id, component)
 			end
+		end
+
+		function entity.get(name)
+			return entity._components[name]
 		end
 
 		return entity
@@ -59,7 +69,7 @@ function World.new()
 	function world.system(name, step)
 		local system = {
 			_name = name,
-			_step = step,
+			_step = step or "Heartbeat",
 
 			update = function(...)
 				return ...
@@ -71,12 +81,20 @@ function World.new()
 				system.init(worldData)
 			end
 
-			system._stepped = RunService[step]:Connect(function()
+			system._stepped = RunService[system._step]:Connect(function(...)
+				if worldData then
+					worldData._DELTATIME = ...
+				else
+					worldData = { _DELTATIME = ... }
+				end
+
 				system:update(worldData)
 			end)
+
+			return system
 		end
 
-		function system.stop()
+		function system:stop()
 			system._stepped:Disconnect()
 		end
 
@@ -119,4 +137,4 @@ function World.new()
 	return world
 end
 
-return World
+return Framework
