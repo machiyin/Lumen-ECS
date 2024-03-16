@@ -44,6 +44,14 @@ function Framework.world.new()
 			return entity._components[name]
 		end
 
+		function entity:destroy()
+			for _, component in entity._components do
+				entity.remove(component)
+			end
+
+			entity = nil
+		end
+
 		return entity
 	end
 
