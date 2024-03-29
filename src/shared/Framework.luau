@@ -33,8 +33,12 @@ function Framework.world.new()
 			return ...
 		end
 
-		function entity.remove(component)
-			entity._components[component._name] = nil
+		function entity.remove(...)
+			local componentsToRemove = { ... }
+			for _, component in componentsToRemove do
+				entity._components[component._name] = nil
+			end
+
 			if DEBUG then
 				print("entity.remove", entity.id, component)
 			end
