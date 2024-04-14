@@ -1,3 +1,41 @@
+export type System<W> = {
+	_name: string,
+	_step: string,
+
+	update: (...any) -> ...any,
+	init: (...any) -> ...any,
+
+	start: (world: World<W>) -> System<W>,
+	stop: () -> nil,
+}
+
+export type Component = {
+	_name: string,
+	_value: any,
+
+	set: (self: Component, newValue: any) -> nil,
+} & () -> any
+
+export type Entity = {
+	id: number,
+	_components: { [string]: Component },
+
+	insert: (...Component) -> ...Component,
+	remove: (...Component) -> ...Component,
+	get: (name: string) -> Component?,
+	destroy: () -> nil,
+}
+
+export type World<W> = {
+	_nextEntityId: number,
+	_entities: { [number]: Entity },
+
+	entity: () -> Entity,
+	component: (name: string, ...any?) -> Component,
+
+	query: (...Component) -> (Entity, ...Component),
+}
+
 local RunService = game:GetService("RunService")
 
 local DEBUG = false
@@ -92,16 +130,16 @@ function Framework.world.new()
 			end,
 		}
 
-		function system:start(worldData)
-			system.init(worldData)
+		function system:start(world)
+			system.init(world)
 			system._stepped = RunService[system._step]:Connect(function(...)
-				if worldData then
-					worldData._DELTATIME = ...
+				if world then
+					world._DELTATIME = ...
 				else
-					worldData = { _DELTATIME = ... }
+					world = { _DELTATIME = ... }
 				end
 
-				system:update(worldData)
+				system:update(world)
 			end)
 
 			return system
