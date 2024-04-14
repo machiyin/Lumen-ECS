@@ -40,7 +40,7 @@ function Framework.world.new()
 			end
 
 			if DEBUG then
-				print("entity.remove", entity.id, component)
+				print("entity.remove", entity.id, ...)
 			end
 		end
 
