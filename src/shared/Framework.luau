@@ -53,7 +53,7 @@ function Framework.world.new()
 				entity.remove(component)
 			end
 
-			entity = nil
+			table.clear(entity)
 		end
 
 		return entity
@@ -86,13 +86,14 @@ function Framework.world.new()
 			update = function(...)
 				return ...
 			end,
+
+			init = function(...)
+				return ...
+			end,
 		}
 
 		function system:start(worldData)
-			if system.init then
-				system.init(worldData)
-			end
-
+			system.init(worldData)
 			system._stepped = RunService[system._step]:Connect(function(...)
 				if worldData then
 					worldData._DELTATIME = ...
